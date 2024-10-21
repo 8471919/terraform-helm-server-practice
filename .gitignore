@@ -1,0 +1,7 @@
+.terraform
+
+*.tfstate*
+
+values*.yaml
+
+configmap.yaml

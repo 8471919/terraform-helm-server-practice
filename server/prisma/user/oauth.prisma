@@ -1,0 +1,15 @@
+model OAuth {
+  id String @id @db.Uuid
+  providerUid String @db.VarChar
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+  deletedAt DateTime? @db.Timestamptz
+
+  memberId String @db.Uuid
+  providerId Int
+
+  member Member @relation(fields: [memberId], references: [id])
+  oauthProvider OAuthProvider @relation(fields: [providerId], references: [id])
+
+  @@index([memberId])
+}

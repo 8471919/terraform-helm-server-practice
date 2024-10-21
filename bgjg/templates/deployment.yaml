@@ -1,0 +1,30 @@
+apiVersion: apps/v1 # 해당 리소스가 사용할 k8s api 버전
+kind: Deployment # 해당 리소스의 타입은 Deployment. Deployment는 파드의 개수를 보장해주는 녀석
+metadata:
+  name: {{.Values.name}} # Deployment의 이름 정의
+  namespace: {{.Values.namespace}} # Deployment가 속할 네임스페이스 정의
+spec: # Deployment의 세부사항 정의
+  replicas: {{.Values.replicaCount}} # 어플리케이션의 복제본(파드) 개수 정의
+  selector: # Deployment가 관리할 파드를 선택하는 기준을 정의
+    matchLabels: # Label이 일치하는 파드를 기준으로 선택하여 관리한다는 뜻
+      app: {{.Values.name}} # app 라벨이 {{.Values.name}}과 일치하는 파드를 선택
+  template: # Deployment가 생성할 파드의 템플릿을 정의
+    metadata: # Deployment가 생성할 파드의 메타데이터 정의
+      labels: # 라벨 정의
+        app: {{.Values.name}}
+    spec: # Deployment가 생성할 파드의 세부사항 정의
+      containers: # 파드 내부에 생성될 컨테이너 정의
+      - name: {{.Values.name}} # 컨테이너 이름 정의
+        image: "{{.Values.image.repository}}" # 컨테이너에서 사용할 이미지 정의
+        imagePullPolicy: {{.Values.image.pullPolicy}} # 이미지 가져오기 정책
+        {{- if ne .Values.configMap.name "none"}} # Values.configMap.name이 "none"이 아닌 경우, 블록 실행
+        envFrom: # 컨테이너로 환경변수를 불러온다.
+          - configMapRef: # ConfigMap으로 부터 환경변수를 불러온다.
+              name: {{.Values.configMap.name}} # ConfigMap의 이름(name 속성)
+        {{- end}} # if문 끝
+        resources: 
+          limits: # 컨테이너가 사용할 리소스 제한 설정
+            memory: "128Mi" # 메모리 최대 128MB
+            cpu: "500m" # CPU 최대 500m(0.5 vCPU)
+        ports:
+        - containerPort: {{.Values.service.targetPort}} # 컨테이너에서 열어둘 포트번호 설정

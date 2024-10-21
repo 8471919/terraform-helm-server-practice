@@ -1,0 +1,40 @@
+{{- if .Values.ingress.enabled}} # ingress.enabled 값이 true인 경우에만 Ingress 리소스를 생성한다.
+apiVersion: networking.k8s.io/v1 # 이 리소스의 api 버전을 정의한다.
+kind: Ingress # 리소스 종류 정의
+metadata: # Ingress에 대한 메타데이터 정의
+  name: {{.Values.name}}-ingress # Ingress 리소스의 이름 설정
+  namespace: {{.Values.namespace}} # Ingress가 속할 네임스페이스 설정
+  {{- if .Values.ingress.annotations}} # ingress.annotations가 정의되어 있을 경우 해당 블록 생성
+  annotations: # Ingress 리소스에 추가 메타 데이터를 설정
+    # 주어진 맵에서 키-값 쌍을 반복
+    {{- range $key, $value := .Values.ingress.annotations}}
+    # quote : 값을 문자열로 변환하여 따옴표로 감싼다.
+    {{ $key }}: {{ $value | quote }}
+    {{- end}}
+  {{- end}}
+spec: # Ingress의 세부사항 정의
+  ingressClassName: {{.Values.ingress.className}} # 사용하고자 하는 IngressClass의 이름 정의
+  rules: # Ingress 규칙 정의
+  # ingress.hosts또는 ingress.paths 중 하나라도 존재할 경우에만 이 블록이 생성된다.
+  {{- if or .Values.ingress.hosts .Values.ingress.paths}}
+  # hosts가 존재하는 경우 host: {{.Values.ingress.hosts}} 설정
+  # 요청을 수신할 호스트 이름 정의
+  - {{- if .Values.ingress.hosts}} host: {{.Values.ingress.hosts}} {{- end}}
+    http: # http 요청을 처리하는 섹션
+      paths: # 아래에서 정의된 paths가 여기 포함된다.
+      {{- range .Values.ingress.paths}} # ingress.paths 배열에 정의된 각 경로를 반복한다.
+      - pathType: ImplementationSpecific # 경로의 유형을 정의. Exact | ImplementationSpecific
+        # 요청을 수신할 경우 정의. ingress.paths 배열의 path 사용. Ingress
+        # Ingress가 트래픽을 라우팅할 경로를 지정하는 부분.
+        # 예를들어 /apapi(/|$).(.*)의 경우, /apapi뒤에 /로 시작하거나, $로 끝나는 요청을 매칭한다.
+        # 그 뒤에 나오는 (.*)는 어떤 문자열이든 매칭한다는 의미. 이 값이 $2로 캡쳐되어서 URL 재작성에 사용된다.
+        # ex) /apapi/foo/bar나 /apapi/ 등의 경로가 여기에 매칭된다.
+        path: {{.path}}
+        backend: # 요청을 처리할 백엔드 서비스를 정의한다.
+          service: # 백엔드 서비스의 이름과 포트 설정
+            name: {{.backend.serviceName}} # 이름 설정
+            port: # 포트 설정. Ingress가 클라이언트의 요청을 처리한 후, 해당 요청을 라우팅할 때 서비스가 사용하는 내부 포트 번호를 의미한다.
+              number: {{.backend.servicePort}}
+      {{- end}}
+  {{- end}}
+{{- end}}

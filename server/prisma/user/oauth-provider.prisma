@@ -1,0 +1,6 @@
+model OAuthProvider {
+  id Int @id @default(autoincrement())
+  provider String @db.VarChar
+
+  OAuth OAuth[]
+}

@@ -1,0 +1,17 @@
+model TokenManager {
+  id String @id @db.Uuid
+  deviceId String @db.VarChar
+  accessToken String @db.VarChar
+  refreshToken String @db.VarChar
+
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+  deletedAt DateTime? @db.Timestamptz
+
+  memberId String @db.Uuid
+
+  member Member @relation(fields: [memberId], references: [id])
+
+  @@index([memberId, deviceId])
+  @@index([refreshToken])
+}

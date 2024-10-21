@@ -1,0 +1,19 @@
+model Member {
+  id String @id @db.Uuid
+  email String @unique @db.VarChar
+  phoneNumber String @db.VarChar
+  name String @db.VarChar
+  nickname String @db.VarChar
+  birthYear String @db.VarChar(4)
+  birthDay String @db.VarChar(4)
+  gender String @db.VarChar(6)
+  profileImage String? @db.VarChar
+  createdAt DateTime @default(now()) @db.Timestamptz
+  updatedAt DateTime @updatedAt @db.Timestamptz
+  deletedAt DateTime? @db.Timestamptz
+
+  oauth OAuth[]
+  tokenManager TokenManager[]
+
+  @@index([email])
+}
